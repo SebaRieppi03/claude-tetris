@@ -104,6 +104,9 @@ jobs:
                `gh issue comment ${{ github.event.issue.number }} --body "..."`
 
             Reglas importantes:
+            - El comentario debe estar escrito en formato Markdown válido que GitHub pueda
+              renderizar correctamente (encabezados con `#`, listas, bloques de código con
+              backticks, negritas, etc.), respetando el formato exacto indicado arriba.
             - Si EVENT ACTION es "edited", el comentario debe empezar con la línea en cursiva
               `_(diagnóstico actualizado tras edición del issue)_` antes del encabezado.
             - No modifiques ningún archivo del repositorio, no crees ramas ni abras Pull Requests.
