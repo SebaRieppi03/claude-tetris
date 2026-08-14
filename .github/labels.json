@@ -1,0 +1,17 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "Algo no funciona como debería" },
+  { "name": "feature", "color": "a2eeef", "description": "Funcionalidad nueva" },
+  { "name": "question", "color": "d876e3", "description": "Duda o soporte, no accionable directamente como código" },
+  { "name": "area:gameplay", "color": "0e8a16", "description": "Rotación, wall kicks, colisión, spawn, lock de piezas" },
+  { "name": "area:rendering", "color": "1d76db", "description": "Canvas, dibujo, ghost piece, colores" },
+  { "name": "area:input", "color": "5319e7", "description": "Teclado, controles, pausa" },
+  { "name": "area:scoring", "color": "fbca04", "description": "Puntaje, líneas, niveles, velocidad" },
+  { "name": "area:ui", "color": "c5def5", "description": "HTML/CSS, panel lateral, overlays" },
+  { "name": "area:docs", "color": "0075ca", "description": "README / CLAUDE.md" },
+  { "name": "P0", "color": "b60205", "description": "Prioridad crítica / bloqueante" },
+  { "name": "P1", "color": "d93f0b", "description": "Prioridad alta" },
+  { "name": "P2", "color": "fbca04", "description": "Prioridad media" },
+  { "name": "P3", "color": "c2e0c6", "description": "Prioridad baja" },
+  { "name": "needs-info", "color": "e4e669", "description": "El issue no tiene información suficiente para diagnosticar" },
+  { "name": "claude-triaged", "color": "7057ff", "description": "Claude ya analizó y etiquetó este issue" }
+]

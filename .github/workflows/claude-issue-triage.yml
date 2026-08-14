@@ -1,0 +1,114 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+concurrency:
+  group: issue-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    # Evita re-disparos sobre issues creados/editados por bots (incluido el propio Claude)
+    if: github.event.issue.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Ensure labels exist
+        run: |
+          jq -c '.[]' .github/labels.json | while read -r item; do
+            name=$(echo "$item" | jq -r '.name')
+            color=$(echo "$item" | jq -r '.color')
+            desc=$(echo "$item" | jq -r '.description')
+            gh label create "$name" --color "$color" --description "$desc" --force
+          done
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+            EVENT ACTION: ${{ github.event.action }}
+            TITLE: ${{ github.event.issue.title }}
+            AUTHOR: ${{ github.event.issue.user.login }}
+            BODY:
+            ${{ github.event.issue.body }}
+
+            Este repositorio es un Tetris de página única en JavaScript vanilla (sin build, sin
+            tests). Su arquitectura está documentada en CLAUDE.md: modelo de tablero (`board`),
+            piezas (`PIECES`, `rotateCW`), colisión (`collide`), wall kicks (`tryRotate`), loop
+            de juego (`loop`), limpieza de líneas (`clearLines`), puntaje (`LINE_SCORES`), pieza
+            fantasma (`ghostY`), y el flujo `init` → `spawn` → `lockPiece`. Léelo primero.
+
+            Tu tarea es analizar este issue de GitHub y:
+
+            1. Leer el issue completo, incluyendo comentarios previos:
+               `gh issue view ${{ github.event.issue.number }} --comments`
+            2. Determinar si es un `bug`, `feature` o `question`.
+            3. Explorar el código relevante (`game.js`, `index.html`, `style.css`) con Read/Grep
+               para entender si el comportamiento reportado es real y qué función(es) están
+               implicadas.
+            4. Buscar posibles duplicados: `gh search issues "..." --repo ${{ github.repository }}`.
+               Si encuentras un duplicado claro, mencciónalo en el comentario con `#<numero>`.
+            5. Decidir la prioridad (P0 crítico/bloqueante, P1 alto, P2 medio, P3 bajo).
+            6. Ver las labels disponibles con `gh label list` — **usa únicamente labels que ya
+               existan en esa lista, nunca inventes ni crees labels nuevas**. Aplica exactamente
+               una de `bug`/`feature`/`question`, una o más `area:*` que correspondan
+               (`area:gameplay`, `area:rendering`, `area:input`, `area:scoring`, `area:ui`,
+               `area:docs`), exactamente una de `P0`/`P1`/`P2`/`P3`, y siempre `claude-triaged`:
+               `gh issue edit ${{ github.event.issue.number }} --add-label "bug,area:gameplay,P2,claude-triaged"`
+               Si el issue no trae información suficiente para diagnosticar (falta repro, falta
+               contexto), agrega también `needs-info`.
+            7. Publica **un único comentario** en el issue (en español) con este formato exacto:
+
+               ## 🔍 Diagnóstico automático
+
+               **Clasificación:** <bug|feature|question> · **Área:** <area:...> · **Prioridad:** <P0-P3>
+
+               ### Resumen
+               <qué reporta el usuario, 1-2 frases>
+
+               ### Reproducción / comportamiento esperado
+               <pasos y qué debería pasar>
+
+               ### Análisis técnico
+               <funciones/archivos concretos implicados, ej. `game.js` función `tryRotate`;
+               por qué el código actual produce ese comportamiento. Si es una `question` sin
+               código involucrado, esta sección puede ser breve>
+
+               ### Solución propuesta
+               <esbozo paso a paso de los cambios necesarios, con archivos y funciones a tocar,
+               para que sirva de base a una implementación posterior>
+
+               ### Riesgos / efectos colaterales
+               <estado global mutable compartido (board, current, next, score, etc.) que podría
+               verse afectado>
+
+               ### Información faltante
+               <solo incluir esta sección si aplica>
+
+               Publica el comentario con:
+               `gh issue comment ${{ github.event.issue.number }} --body "..."`
+
+            Reglas importantes:
+            - Si EVENT ACTION es "edited", el comentario debe empezar con la línea en cursiva
+              `_(diagnóstico actualizado tras edición del issue)_` antes del encabezado.
+            - No modifiques ningún archivo del repositorio, no crees ramas ni abras Pull Requests.
+              Tu única salida son labels y el comentario de diagnóstico.
+            - No uses la mención "@claude" en tu comentario.
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh search issues:*)"
