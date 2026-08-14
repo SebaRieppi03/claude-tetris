@@ -13,6 +13,7 @@ const COLORS = [
   '#e57373', // Z - red
   '#90caf9', // J - pale blue
   '#ffb74d', // L - orange
+  '#f06292', // Turca - pink
 ];
 
 const PIECES = [
@@ -24,6 +25,7 @@ const PIECES = [
   [[5,5,0],[0,5,5],[0,0,0]],                  // Z
   [[6,0,0],[6,6,6],[0,0,0]],                  // J
   [[0,0,7],[7,7,7],[0,0,0]],                  // L
+  [[8,8,8],[8,0,8],[8,8,8]],                  // Turca - anillo 3x3 con hueco central
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
@@ -32,6 +34,9 @@ const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
 const nextCtx = nextCanvas.getContext('2d');
+const holdCanvas = document.getElementById('hold-canvas');
+const holdCtx = holdCanvas.getContext('2d');
+const holdSection = document.getElementById('hold-section');
 const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
@@ -44,7 +49,7 @@ const themeToggle = document.getElementById('theme-toggle');
 const THEME_STORAGE_KEY = 'tetris-theme';
 const GRID_LINE_COLORS = { dark: '#22222e', light: '#dde1ee' };
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let board, current, next, hold, holdUsed, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
 function applyTheme(theme) {
   document.body.classList.toggle('light', theme === 'light');
@@ -65,10 +70,14 @@ function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
 }
 
-function randomPiece() {
-  const type = Math.floor(Math.random() * 7) + 1;
+function makePiece(type) {
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
+}
+
+function randomPiece() {
+  const type = Math.random() < 1 / 12 ? 8 : Math.floor(Math.random() * 7) + 1;
+  return makePiece(type);
 }
 
 function collide(shape, ox, oy) {
@@ -157,7 +166,24 @@ function softDrop() {
 function lockPiece() {
   merge();
   clearLines();
+  holdUsed = false;
   spawn();
+  drawHold();
+}
+
+function holdPiece() {
+  if (holdUsed) return;
+  const heldType = hold;
+  hold = current.type;
+  if (heldType === null) {
+    spawn();
+  } else {
+    current = makePiece(heldType);
+    if (collide(current.shape, current.x, current.y)) endGame();
+  }
+  holdUsed = true;
+  dropAccum = 0;
+  drawHold();
 }
 
 function spawn() {
@@ -237,6 +263,19 @@ function drawNext() {
       drawBlock(nextCtx, offX + c, offY + r, shape[r][c], NB);
 }
 
+function drawHold() {
+  const NB = 30;
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  holdSection.classList.toggle('locked', holdUsed);
+  if (hold === null) return;
+  const shape = PIECES[hold];
+  const offX = Math.floor((4 - shape[0].length) / 2);
+  const offY = Math.floor((4 - shape.length) / 2);
+  for (let r = 0; r < shape.length; r++)
+    for (let c = 0; c < shape[r].length; c++)
+      drawBlock(holdCtx, offX + c, offY + r, shape[r][c], NB);
+}
+
 function endGame() {
   gameOver = true;
   cancelAnimationFrame(animId);
@@ -286,10 +325,13 @@ function init() {
   gameOver = false;
   dropInterval = 1000;
   dropAccum = 0;
+  hold = null;
+  holdUsed = false;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
+  drawHold();
   overlay.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
@@ -315,6 +357,9 @@ document.addEventListener('keydown', e => {
     case 'Space':
       e.preventDefault();
       hardDrop();
+      break;
+    case 'KeyC':
+      holdPiece();
       break;
   }
   updateHUD();
