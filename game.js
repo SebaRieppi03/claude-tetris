@@ -49,7 +49,44 @@ const themeToggle = document.getElementById('theme-toggle');
 const THEME_STORAGE_KEY = 'tetris-theme';
 const GRID_LINE_COLORS = { dark: '#22222e', light: '#dde1ee' };
 
-let board, current, next, hold, holdUsed, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+/* ---- Menú de pausa ---- */
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const controlsBtn = document.getElementById('controls-btn');
+const pauseControlsList = document.getElementById('pause-controls-list');
+const startLevelSelect = document.getElementById('start-level-select');
+const sidebarControlsList = document.querySelector('.controls ul');
+
+const START_LEVEL_STORAGE_KEY = 'tetris-start-level';
+
+// Reutiliza la lista de controles de la barra lateral en vez de duplicarla,
+// así ambas listas quedan siempre sincronizadas con una sola fuente de verdad.
+function populatePauseControlsList() {
+  if (!sidebarControlsList) return;
+  pauseControlsList.appendChild(sidebarControlsList.cloneNode(true));
+}
+
+function speedForLevel(lvl) {
+  return Math.max(100, 1000 - (lvl - 1) * 90);
+}
+
+function applyStartLevel(lvl) {
+  startLevel = lvl;
+  startLevelSelect.value = String(lvl);
+}
+
+function initStartLevel() {
+  const saved = parseInt(localStorage.getItem(START_LEVEL_STORAGE_KEY), 10);
+  applyStartLevel(Number.isInteger(saved) && saved >= 1 && saved <= 15 ? saved : 1);
+  startLevelSelect.addEventListener('change', () => {
+    const lvl = parseInt(startLevelSelect.value, 10) || 1;
+    applyStartLevel(lvl);
+    localStorage.setItem(START_LEVEL_STORAGE_KEY, String(lvl));
+  });
+}
+/* ---- Fin menú de pausa ---- */
+
+let board, current, next, hold, holdUsed, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, startLevel, currentStartLevel;
 
 function applyTheme(theme) {
   document.body.classList.toggle('light', theme === 'light');
@@ -134,8 +171,8 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+    level = Math.floor(lines / 10) + currentStartLevel;
+    dropInterval = speedForLevel(level);
     updateHUD();
   }
 }
@@ -288,12 +325,14 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('pause-menu');
+    dropAccum = 0;
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
+    overlay.classList.add('pause-menu');
     overlay.classList.remove('hidden');
   }
 }
@@ -320,10 +359,11 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  currentStartLevel = startLevel;
+  level = currentStartLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = speedForLevel(currentStartLevel);
   dropAccum = 0;
   hold = null;
   holdUsed = false;
@@ -333,12 +373,13 @@ function init() {
   updateHUD();
   drawHold();
   overlay.classList.add('hidden');
+  overlay.classList.remove('pause-menu');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -367,5 +408,22 @@ document.addEventListener('keydown', e => {
 
 restartBtn.addEventListener('click', init);
 
+/* ---- Menú de pausa ---- */
+resumeBtn.addEventListener('click', () => {
+  if (paused) togglePause();
+});
+
+pauseRestartBtn.addEventListener('click', () => {
+  init();
+});
+
+controlsBtn.addEventListener('click', () => {
+  const isHidden = pauseControlsList.classList.toggle('hidden');
+  controlsBtn.setAttribute('aria-expanded', String(!isHidden));
+});
+/* ---- Fin menú de pausa ---- */
+
 initTheme();
+initStartLevel();
+populatePauseControlsList();
 init();
