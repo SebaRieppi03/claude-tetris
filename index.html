@@ -59,12 +59,42 @@
             <li><kbd>P</kbd> pausa</li>
           </ul>
         </div>
+
+        <!-- ---- Records: sección del panel lateral ---- -->
+        <div class="panel-section records-panel">
+          <span class="label">RECORDS</span>
+          <ol class="records-list" id="panel-records-list"></ol>
+          <div class="records-stats">
+            <span>Mejor combo: <span id="panel-best-combo">0</span></span>
+            <span>Máx. líneas: <span id="panel-max-lines">0</span></span>
+          </div>
+        </div>
+        <!-- ---- Fin Records panel ---- -->
       </aside>
 
       <div id="overlay" class="overlay hidden">
         <div class="overlay-box">
           <p id="overlay-title">GAME OVER</p>
           <p id="overlay-score"></p>
+
+          <!-- ---- Records: formulario de nombre (solo game over, si califica) ---- -->
+          <div id="record-form" class="record-form hidden">
+            <label for="record-name">¡Nuevo récord! Ingresá tu nombre:</label>
+            <input type="text" id="record-name" maxlength="12" placeholder="Nombre" autocomplete="off" />
+            <button id="record-save-btn">Guardar</button>
+          </div>
+
+          <div id="overlay-records" class="records-section hidden">
+            <span class="label">RECORDS</span>
+            <ol class="records-list" id="overlay-records-list"></ol>
+            <div class="records-stats">
+              <span>Mejor combo: <span id="overlay-best-combo">0</span></span>
+              <span>Máx. líneas: <span id="overlay-max-lines">0</span></span>
+            </div>
+            <button id="reset-records-btn">Borrar récords</button>
+          </div>
+          <!-- ---- Fin Records overlay ---- -->
+
           <button id="restart-btn">Reiniciar</button>
         </div>
       </div>
