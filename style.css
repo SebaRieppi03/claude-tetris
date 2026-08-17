@@ -288,3 +288,51 @@ kbd {
 #restart-btn:hover {
   background: var(--btn-hover-bg);
 }
+
+/* ---- Skins: selector y overrides de tablero por tema visual ---- */
+.skin-selector select {
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 6px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.skin-selector select:focus-visible {
+  outline: 2px solid var(--title-color);
+  outline-offset: 2px;
+}
+
+body.skin-neon {
+  --board-bg: #06060c;
+  --board-border: #00fff2;
+}
+
+body.skin-neon.light {
+  --board-bg: #12121e;
+  --board-border: #00c2ff;
+  --text: #e8f8ff;
+}
+
+body.skin-pastel {
+  --board-bg: #fdf6f0;
+  --board-border: #e8d5e8;
+}
+
+body.skin-pastel.light {
+  --board-bg: #fffaf5;
+  --board-border: #f0e0f0;
+}
+
+body.skin-pixel {
+  --board-bg: #1a1a25;
+  --board-border: #4a4a5a;
+}
+
+body.skin-pixel.light {
+  --board-bg: #ffffff;
+  --board-border: #cdd1e0;
+}
