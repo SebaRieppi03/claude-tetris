@@ -26,6 +26,15 @@
   --btn-hover-bg: #9bbdff;
   --switch-bg: #2a2a3a;
   --switch-knob: #e0e0e0;
+  /* ---- Records ---- */
+  --record-row-bg: rgba(255, 255, 255, 0.03);
+  --record-new-bg: rgba(122, 162, 247, 0.22);
+  --record-new-border: #7aa2f7;
+  --record-input-bg: #1a1a25;
+  --record-input-border: #3a3a5a;
+  --record-reset-bg: transparent;
+  --record-reset-text: #e57373;
+  --record-reset-border: #e57373;
 }
 
 body.light {
@@ -50,6 +59,15 @@ body.light {
   --btn-hover-bg: #5b7ff0;
   --switch-bg: #c4c8da;
   --switch-knob: #ffffff;
+  /* ---- Records ---- */
+  --record-row-bg: rgba(0, 0, 0, 0.03);
+  --record-new-bg: rgba(59, 91, 219, 0.15);
+  --record-new-border: #3b5bdb;
+  --record-input-bg: #ffffff;
+  --record-input-border: #c4c8da;
+  --record-reset-bg: transparent;
+  --record-reset-text: #d64545;
+  --record-reset-border: #d64545;
 }
 
 body {
@@ -287,4 +305,145 @@ kbd {
 
 #restart-btn:hover {
   background: var(--btn-hover-bg);
+}
+
+/* ---- Records ---- */
+.records-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.record-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  background: var(--record-row-bg);
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+.record-name {
+  color: var(--control-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-score {
+  color: var(--value-color);
+  font-weight: 700;
+}
+
+.record-row.record-new {
+  background: var(--record-new-bg);
+  outline: 1px solid var(--record-new-border);
+}
+
+.records-empty {
+  font-size: 11px;
+  color: var(--control-text);
+  list-style: none;
+}
+
+.records-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--control-text);
+  margin-top: 4px;
+}
+
+/* Panel lateral: records */
+.records-panel .records-list {
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+/* Overlay: formulario de nuevo récord */
+.record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.record-form.hidden {
+  display: none;
+}
+
+.record-form label {
+  font-size: 12px;
+  color: var(--control-text);
+  text-align: center;
+}
+
+#record-name {
+  background: var(--record-input-bg);
+  border: 1px solid var(--record-input-border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+}
+
+#record-save-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+#record-save-btn:hover {
+  background: var(--btn-hover-bg);
+}
+
+/* Overlay: sección de tabla de récords */
+.records-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 220px;
+}
+
+.records-section.hidden {
+  display: none;
+}
+
+.records-section .records-list {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+#reset-records-btn {
+  margin-top: 6px;
+  background: var(--record-reset-bg);
+  color: var(--record-reset-text);
+  border: 1px solid var(--record-reset-border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+#reset-records-btn:hover {
+  background: var(--record-new-bg);
 }
